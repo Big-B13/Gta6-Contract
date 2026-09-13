@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project: November</title>
+  <style>
+    :root {
+      --ink: #f8f4ea;
+      --muted: #a9a69e;
+      --bg: #0b0d0f;
+      --panel: rgba(21, 24, 28, .88);
+      --line: rgba(255,255,255,.11);
+      --pink: #ff6eab;
+      --orange: #ff9c5a;
+      --green: #b7dc73;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--ink); background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      overflow-x: hidden;
+    }
+    body::before, body::after { content: ""; position: fixed; pointer-events: none; z-index: -1; filter: blur(1px); }
+    body::before { inset: -20%; background: radial-gradient(circle at 75% 15%, #4e2356 0, transparent 28%), radial-gradient(circle at 20% 85%, #24384a 0, transparent 30%); opacity: .72; }
+    body::after { width: 100%; height: 100%; inset: 0; opacity: .09; background-image: linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px); background-size: 46px 46px; mask-image: linear-gradient(to bottom, black, transparent 75%); }
+    .shell { width: min(960px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 54px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 34px; }
+    .brand { font-weight: 900; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; }
+    .brand span { color: var(--pink); }
+    .tag { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+    main { display: grid; grid-template-columns: .85fr 1.3fr; gap: 22px; align-items: stretch; }
+    .hero, .card { background: var(--panel); border: 1px solid var(--line); border-radius: 26px; box-shadow: 0 22px 70px rgba(0,0,0,.32); backdrop-filter: blur(15px); }
+    .hero { padding: 32px; position: relative; overflow: hidden; min-height: 520px; display: flex; flex-direction: column; justify-content: space-between; }
+    .hero::after { content: "VI"; position: absolute; font-size: 220px; font-weight: 1000; line-height: .7; right: -18px; top: 56px; color: rgba(255,110,171,.09); font-style: italic; }
+    .eyebrow { color: var(--orange); font-size: 12px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { font-size: clamp(52px, 8vw, 88px); line-height: .85; letter-spacing: -.08em; margin: 18px 0 20px; position: relative; z-index: 1; }
+    h1 em { color: var(--pink); font-style: normal; }
+    .hero p { color: var(--muted); line-height: 1.6; max-width: 310px; position: relative; z-index: 1; }
+    .stamp { align-self: flex-start; margin-top: 25px; padding: 10px 13px; border: 1px solid rgba(255,156,90,.55); color: var(--orange); transform: rotate(-4deg); font-size: 11px; letter-spacing: .12em; font-weight: 800; text-transform: uppercase; }
+    .card { padding: clamp(24px, 5vw, 48px); min-height: 520px; display: flex; flex-direction: column; justify-content: center; }
+    .progress { display: flex; gap: 7px; margin-bottom: 32px; }
+    .dot { height: 5px; flex: 1; background: #34373b; border-radius: 50px; transition: .3s; }
+    .dot.active { background: linear-gradient(90deg, var(--pink), var(--orange)); }
+    .question-number { color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 14px; }
+    h2 { font-size: clamp(27px, 4vw, 42px); line-height: 1.05; letter-spacing: -.045em; margin: 0 0 16px; }
+    .sub { margin: 0 0 28px; color: var(--muted); line-height: 1.55; }
+    .choices { display: grid; gap: 12px; }
+    button { border: 0; font: inherit; color: inherit; cursor: pointer; }
+    .choice { text-align: left; padding: 18px 19px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.045); transition: .2s; }
+    .choice:hover { transform: translateY(-2px); border-color: var(--pink); background: rgba(255,110,171,.1); }
+    .choice strong { display:block; margin-bottom: 4px; }
+    .choice small { color: var(--muted); }
+    .choice.yes strong::before { content: "↗  "; color: var(--green); }
+    .choice.no strong::before { content: "○  "; color: var(--orange); }
+    .choice.soft strong::before { content: "✦  "; color: var(--pink); }
+    .back { margin-top: 22px; color: var(--muted); background: transparent; font-size: 13px; align-self: flex-start; padding: 4px 0; }
+    .back:hover { color: var(--ink); }
+    .result { text-align: center; }
+    .result .big { font-size: 60px; margin-bottom: 12px; }
+    .result h2 { font-size: clamp(34px, 5vw, 52px); }
+    .result p { color: var(--muted); line-height: 1.6; max-width: 480px; margin: 0 auto 25px; }
+    .note { padding: 15px 18px; border-radius: 14px; background: rgba(183,220,115,.09); border: 1px solid rgba(183,220,115,.3); color: #dceab9; text-align: left; font-size: 14px; line-height: 1.5; }
+    .condition-list { display: grid; gap: 10px; margin-bottom: 22px; }
+    .condition { display: flex; align-items: center; gap: 12px; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.045); cursor: pointer; color: var(--ink); }
+    .condition:hover { border-color: var(--pink); background: rgba(255,110,171,.1); }
+    .condition input { width: 18px; height: 18px; accent-color: var(--pink); }
+    .condition span { font-size: 14px; line-height: 1.35; }
+    .signature-box { margin-top: 22px; }
+    .signature-box label { display: block; color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+    .signature-box input { width: 100%; padding: 15px 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.06); color: var(--ink); font: inherit; outline: none; }
+    .signature-box input:focus { border-color: var(--pink); }
+    .contract-list { text-align: left; margin: 16px 0 0; padding-left: 22px; color: #d7d4cc; line-height: 1.65; }
+    .download { margin-top: 18px; background: var(--green); color: #18200c; border-radius: 100px; padding: 13px 20px; font-weight: 800; }
+    .download:disabled { opacity: .45; cursor: not-allowed; }
+    .restart { margin-top: 24px; background: var(--pink); color: #1d0d17; border-radius: 100px; padding: 13px 20px; font-weight: 800; }
+    @media (max-width: 750px) { main { grid-template-columns: 1fr; } .hero { min-height: 270px; padding: 26px; } .hero p { max-width: 500px; } .hero::after { font-size: 150px; top: 40px; } .card { min-height: 500px; } header { margin-bottom: 22px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header><div class="brand">Project <span>November</span></div><div class="tag">A very serious relationship proposal</div></header>
+    <main>
+      <section class="hero">
+        <div><div class="eyebrow">classified • for one person only</div><h1>Let me<br>play <em>GTA VI.</em></h1><p>A tiny interactive presentation about an important November request, prepared with love and absolutely no corporate funding.</p></div>
+        <div class="stamp">Made for my favourite person</div>
+      </section>
+      <section class="card" id="app"></section>
+    </main>
+  </div>
+  <script>
+    const app = document.getElementById('app');
+    let history = [];
+    let step = 0;
+    let retryMode = false;
+    const screens = [
+      { title: 'Do you know what GTA 6 is?', sub: 'Quick knowledge check before the very important part.', choices: [
+        ['yes', 'Yes, I know it', 'Proceed to the official presentation.'],
+        ['no', 'Not really', 'I would like a tiny explanation, please.']
+      ]},
+      { title: 'GTA 6 is…', sub: 'A highly anticipated open-world video game where you explore a fictional version of Vice City, follow a story, drive around, and cause fictional chaos. It is played on a screen, not in real life. Now that we are up to speed:', choices: [
+        ['next', 'Okay, got it', 'Continue to the next question.']
+      ]},
+      { title: 'Would you be open to hearing my November proposal?', sub: 'No pressure. This is a conversation, not a legally binding contract.', choices: [
+        ['yes', 'Sure, tell me', 'I am curious.'],
+        ['no', 'Not right now', 'Let us talk about it another time.']
+      ]},
+      { title: 'May I play GTA 6 during the month of November?', sub: 'I am asking for dedicated game time while still being a loving, present, and responsible boyfriend.', choices: [
+        ['yes', 'Yes, I support the mission', 'Permission granted with good vibes.'],
+        ['conditions', 'Yes, with some conditions', 'Let us agree on the ground rules together.'],
+        ['no', 'I would rather not', 'That is okay — your answer matters.']
+      ]}
+    ];
+    function render() {
+      const s = screens[step];
+      app.innerHTML = `<div class="progress">${screens.map((_,i)=>`<span class="dot ${i<=step?'active':''}"></span>`).join('')}</div><div class="question-number">Question ${step+1} / ${screens.length}</div><h2>${s.title}</h2><p class="sub">${s.sub}</p><div class="choices">${s.choices.filter(([id]) => !(step===2 && retryMode && id==='no')).map(([id,t,d])=>`<button class="choice ${id==='no'?'no':id==='yes'?'yes':'soft'}" data-id="${id}"><strong>${t}</strong><small>${d}</small></button>`).join('')}</div>${step>0?'<button class="back" id="back">← Go back</button>':''}`;
+      app.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.id)));
+      const back=app.querySelector('#back'); if(back) back.onclick=()=>{ step--; render(); };
+    }
+    function choose(id) {
+      history.push({step,id});
+      if (step===0 && id==='no') { step=1; render(); return; }
+      if (step===1 || (step===0 && id==='yes')) { step=2; render(); return; }
+      if (step===2 && id==='no') { retryScreen(); return; }
+      if (step===2) { step=3; render(); return; }
+      if (step===3 && id==='no') { alert("This option somehow doesn't work, no clue why... How strange 🤔"); return; }
+      if (step===3 && id==='yes') contractScreen(['GTA 6 gaming time during November', 'Real life, plans, and communication come first']);
+      else if (step===3 && id==='conditions') conditionsScreen();
+      else finish('Proposal received.', 'Thank you for telling me how you feel. No game is more important than us, and I am happy to talk about it.');
+    }
+    function conditionsScreen() {
+      app.innerHTML=`<div class="progress">${screens.map((_,i)=>`<span class="dot active"></span>`).join('')}</div><div class="question-number">Bonus round • Ground rules</div><h2>What conditions would you like?</h2><p class="sub">Pick any that feel important. We can always talk about them together.</p><div class="condition-list">
+        <label class="condition"><input type="checkbox" value="play time"><span>Agree on specific gaming times</span></label>
+        <label class="condition"><input type="checkbox" value="plans first"><span>Our plans and dates come first</span></label>
+        <label class="condition"><input type="checkbox" value="chores"><span>Chores and responsibilities stay on track</span></label>
+        <label class="condition"><input type="checkbox" value="pause"><span>Pause the game whenever you need me</span></label>
+        <label class="condition"><input type="checkbox" value="shoe store"><span>No suspicious visits to the “shoe store” 😇</span></label>
+        <label class="condition"><input type="checkbox" value="in-game chaos"><span>In-game chaos stays fictional and does not become real-life chaos</span></label>
+        <label class="condition"><input type="checkbox" value="real money"><span>No spending real money on game extras without discussing it first</span></label>
+        <label class="condition"><input type="checkbox" value="attention"><span>No ignoring me because of a mission, race, or “five more minutes”</span></label>
+      </div><button class="restart" id="confirmConditions">Save these conditions</button><button class="back" id="back">← Go back</button>`;
+      document.getElementById('confirmConditions').onclick=()=>{ const selected=[...app.querySelectorAll('input:checked')].map(input=>input.parentElement.querySelector('span').textContent.trim()); contractScreen(selected.length ? selected : ['We will talk about the ground rules together']); };
+      document.getElementById('back').onclick=()=>render();
+    }
+    function contractScreen(conditions) {
+      app.innerHTML=`<div class="result"><div class="big">📜</div><div class="question-number">Final step • The November agreement</div><h2>Sign the contract</h2><p class="sub">These are the terms you chose. Add your signature below, then download the finished agreement as a PDF.</p><ul class="contract-list">${conditions.map(item=>`<li>${item}</li>`).join('')}</ul><div class="signature-box"><label for="signature">Your signature</label><input id="signature" type="text" placeholder="Type your name here" autocomplete="off"></div><button class="download" id="download" disabled>Download signed PDF</button><button class="back" id="back">← Go back</button></div>`;
+      const signature=document.getElementById('signature'); const download=document.getElementById('download');
+      signature.addEventListener('input',()=>{ download.disabled=!signature.value.trim(); });
+      download.onclick=()=>downloadContract(conditions, signature.value.trim());
+      document.getElementById('back').onclick=()=>conditionsScreen();
+    }
+    function downloadContract(conditions, signature) {
+      const today=new Date().toLocaleDateString('en-GB');
+      const lines=['THE NOVEMBER AGREEMENT','',`Signed by: ${signature}`,`Date: ${today}`,'','The undersigned agrees to the following playful terms:',...conditions.map(item=>'- '+item),'','This agreement is made with love and good humour.','Our relationship remains more important than any video game.'];
+      const esc=text=>text.split('\\').join('\\\\').split('(').join('\\(').split(')').join('\\)');
+      const content=['BT','/F1 20 Tf','50 760 Td',...lines.map((line,i)=>`(${esc(line)}) Tj${i<lines.length-1?' 0 -28 Td':''}`),'ET'].join('\\n');
+      const objects=[`1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj`,`2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj`,`3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj`,`4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj`,`5 0 obj << /Length ${content.length} >> stream\\n${content}\\nendstream endobj`];
+      let pdf='%PDF-1.4\\n'; const offsets=[0]; objects.forEach(obj=>{ offsets.push(pdf.length); pdf+=obj+'\\n'; }); const xref=pdf.length; pdf+=`xref\\n0 ${objects.length+1}\\n0000000000 65535 f \\n${offsets.slice(1).map(o=>String(o).padStart(10,'0')+' 00000 n \\n').join('')}trailer << /Size ${objects.length+1} /Root 1 0 R >>\\nstartxref\\n${xref}\\n%%EOF`;
+      const blob=new Blob([pdf],{type:'application/pdf'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download='November-Agreement.pdf'; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+    function retryScreen() { app.innerHTML=`<div class="result"><div class="big">😅</div><h2>Unfortunately, that is not the answer we are looking for.</h2><p>But that is okay — let us try this question one more time.</p><div class="note"><strong>Small update:</strong> “Not right now” has mysteriously disappeared from the options. Please choose wisely. 😇</div><button class="restart" id="tryAgain">Try again</button></div>`; document.getElementById('tryAgain').onclick=()=>{ retryMode=true; render(); }; }
+    function finish(title, text) { app.innerHTML=`<div class="result"><div class="big">${title.includes('approved')?'🎮':title.includes('agreement')?'🤝':'💗'}</div><h2>${title}</h2><p>${text}</p><div class="note"><strong>Relationship rule #1:</strong> GTA 6 is fictional. Being kind, listening, and respecting each other is very real.</div><button class="restart" id="restart">Start over</button></div>`; document.getElementById('restart').onclick=()=>{step=0;history=[];retryMode=false;render();}; }
+    render();
+  </script>
+</body>
+</html>

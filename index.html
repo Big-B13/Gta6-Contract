@@ -74,6 +74,8 @@
     .download { margin-top: 18px; background: var(--green); color: #18200c; border-radius: 100px; padding: 13px 20px; font-weight: 800; }
     .download:disabled { opacity: .45; cursor: not-allowed; }
     .contract-image { width: min(100%, 460px); display: block; margin: 12px auto 18px; border-radius: 4px; box-shadow: 0 14px 35px rgba(0,0,0,.35); }
+    :focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
+    .signature-box input:focus-visible { outline: 3px solid var(--orange); }
     .restart { margin-top: 24px; background: var(--pink); color: #1d0d17; border-radius: 100px; padding: 13px 20px; font-weight: 800; }
     @media (max-width: 750px) { main { grid-template-columns: 1fr; } .hero { min-height: 270px; padding: 26px; } .hero p { max-width: 500px; } .hero::after { font-size: 150px; top: 40px; } .card { min-height: 500px; } header { margin-bottom: 22px; } }
   </style>
@@ -86,105 +88,9 @@
         <div><div class="eyebrow">classified • for one person only</div><h1>Let me<br>play <em>GTA VI.</em></h1><p>A tiny interactive presentation about an important November request, prepared with love and absolutely no corporate funding.</p></div>
         <div class="stamp">Made for my favourite person</div>
       </section>
-      <section class="card" id="app"></section>
+      <section class="card" id="app" aria-label="November proposal"></section>
     </main>
   </div>
-  <script>
-    const app = document.getElementById('app');
-    let history = [];
-    let step = 0;
-    let retryMode = false;
-    const screens = [
-      { title: 'Do you know what GTA 6 is?', sub: 'Quick knowledge check before the very important part.', choices: [
-        ['yes', 'Yes, I know it', 'Proceed to the official presentation.'],
-        ['no', 'Not really', 'I would like a tiny explanation, please.']
-      ]},
-      { title: 'GTA 6 is…', sub: 'A highly anticipated open-world video game where you explore a fictional version of Vice City, follow a story, drive around, and cause fictional chaos. It is played on a screen, not in real life. Now that we are up to speed:', choices: [
-        ['next', 'Okay, got it', 'Continue to the next question.']
-      ]},
-      { title: 'Would you be open to hearing my November proposal?', sub: 'No pressure. This is a conversation, not a legally binding contract.', choices: [
-        ['yes', 'Sure, tell me', 'I am curious.'],
-        ['no', 'Not right now', 'Let us talk about it another time.']
-      ]},
-      { title: 'May I play GTA 6 during the month of November?', sub: 'I am asking for dedicated game time while still being a loving, present, and responsible boyfriend.', choices: [
-        ['yes', 'Yes, I support the mission', 'Permission granted with good vibes.'],
-        ['conditions', 'Yes, with some conditions', 'Let us agree on the ground rules together.'],
-        ['no', 'I would rather not', 'That is okay — your answer matters.']
-      ]}
-    ];
-    function render() {
-      const s = screens[step];
-      app.innerHTML = `<div class="progress">${screens.map((_,i)=>`<span class="dot ${i<=step?'active':''}"></span>`).join('')}</div><div class="question-number">Question ${step+1} / ${screens.length}</div><h2>${s.title}</h2><p class="sub">${s.sub}</p><div class="choices">${s.choices.filter(([id]) => !(step===2 && retryMode && id==='no')).map(([id,t,d])=>`<button class="choice ${id==='no'?'no':id==='yes'?'yes':'soft'}" data-id="${id}"><strong>${t}</strong><small>${d}</small></button>`).join('')}</div>${step>0?'<button class="back" id="back">← Go back</button>':''}`;
-      app.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.id)));
-      const back=app.querySelector('#back'); if(back) back.onclick=()=>{ step--; render(); };
-    }
-    function choose(id) {
-      history.push({step,id});
-      if (step===0 && id==='no') { step=1; render(); return; }
-      if (step===1 || (step===0 && id==='yes')) { step=2; render(); return; }
-      if (step===2 && id==='no') { retryScreen(); return; }
-      if (step===2) { step=3; render(); return; }
-      if (step===3 && id==='no') { alert("This option somehow doesn't work, no clue why... How strange 🤔"); return; }
-      if (step===3 && id==='yes') contractScreen(['GTA 6 gaming time during November', 'Real life, plans, and communication come first']);
-      else if (step===3 && id==='conditions') conditionsScreen();
-      else finish('Proposal received.', 'Thank you for telling me how you feel. No game is more important than us, and I am happy to talk about it.');
-    }
-    function conditionsScreen() {
-      app.innerHTML=`<div class="progress">${screens.map((_,i)=>`<span class="dot active"></span>`).join('')}</div><div class="question-number">Bonus round • Ground rules</div><h2>What conditions would you like?</h2><p class="sub">Pick any that feel important. We can always talk about them together.</p><div class="condition-list">
-        <label class="condition"><input type="checkbox" value="play time"><span>Agree on specific gaming times</span></label>
-        <label class="condition"><input type="checkbox" value="plans first"><span>Our plans and dates come first</span></label>
-        <label class="condition"><input type="checkbox" value="chores"><span>Chores and responsibilities stay on track</span></label>
-        <label class="condition"><input type="checkbox" value="pause"><span>Pause the game whenever you need me</span></label>
-        <label class="condition"><input type="checkbox" value="shoe store"><span>No suspicious visits to the “shoe store” 😇</span></label>
-        <label class="condition"><input type="checkbox" value="in-game chaos"><span>In-game chaos stays fictional and does not become real-life chaos</span></label>
-        <label class="condition"><input type="checkbox" value="real money"><span>No spending real money on game extras without discussing it first</span></label>
-        <label class="condition"><input type="checkbox" value="attention"><span>No ignoring me because of a mission, race, or “five more minutes”</span></label>
-      </div><button class="restart" id="confirmConditions">Save these conditions</button><button class="back" id="back">← Go back</button>`;
-      document.getElementById('confirmConditions').onclick=()=>{ const selected=[...app.querySelectorAll('input:checked')].map(input=>input.parentElement.querySelector('span').textContent.trim()); contractScreen(selected.length ? selected : ['We will talk about the ground rules together']); };
-      document.getElementById('back').onclick=()=>render();
-    }
-    function contractScreen(conditions) {
-      app.innerHTML=`<div class="result"><div class="big">📜</div><div class="question-number">Final step • The November agreement</div><h2>Sign the contract</h2><p class="sub">These are the terms you chose. Add your signature below, then download the finished agreement as a PDF.</p><ul class="contract-list">${conditions.map(item=>`<li>${item}</li>`).join('')}</ul><div class="signature-box"><label for="signature">Your signature</label><input id="signature" type="text" placeholder="Type your name here" autocomplete="off"></div><button class="download" id="download" disabled>Create signed picture</button><button class="back" id="back">← Go back</button></div>`;
-      const signature=document.getElementById('signature'); const download=document.getElementById('download');
-      signature.addEventListener('input',()=>{ download.disabled=!signature.value.trim(); });
-      download.onclick=()=>createSignedPicture(conditions, signature.value.trim());
-      document.getElementById('back').onclick=()=>conditionsScreen();
-    }
-    function createSignedPicture(conditions, signature) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1400; canvas.height = 1900;
-      const ctx = canvas.getContext('2d');
-      const ink = '#20252b', muted = '#68717a', accent = '#b14e76';
-      ctx.fillStyle = '#f8f5ed'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#d2c7b5'; ctx.lineWidth = 8; ctx.strokeRect(55, 55, 1290, 1790);
-      ctx.fillStyle = accent; ctx.fillRect(55, 55, 1290, 22);
-      ctx.textAlign = 'center'; ctx.fillStyle = ink; ctx.font = 'bold 64px Georgia';
-      ctx.fillText('THE NOVEMBER AGREEMENT', 700, 190);
-      ctx.font = '24px Arial'; ctx.fillStyle = muted;
-      ctx.fillText('RELATIONSHIP AND GAMING TIME TERMS', 700, 240);
-      ctx.strokeStyle = '#d2c7b5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(150, 285); ctx.lineTo(1250, 285); ctx.stroke();
-      ctx.textAlign = 'left'; ctx.fillStyle = ink; ctx.font = '28px Arial';
-      const today = new Date().toLocaleDateString('en-GB');
-      ctx.fillText('Date: ' + today, 150, 355); ctx.fillText('Signed by: ' + signature, 760, 355);
-      let y = 470;
-      const heading = text => { ctx.fillStyle = accent; ctx.font = 'bold 32px Arial'; ctx.fillText(text, 150, y); y += 58; ctx.fillStyle = ink; ctx.font = '26px Arial'; };
-      const paragraph = text => { const words = text.split(' '); let line = ''; for (const word of words) { const test = line ? line + ' ' + word : word; if (ctx.measureText(test).width > 1080 && line) { ctx.fillText(line, 150, y); y += 39; line = word; } else line = test; } if (line) { ctx.fillText(line, 150, y); y += 48; } };
-      heading('1. PURPOSE'); paragraph('This agreement records a playful, mutual understanding about GTA 6 gaming time during November.');
-      y += 18; heading('2. AGREED TERMS'); conditions.forEach((item, i) => paragraph((i + 1) + '. ' + item));
-      y += 18; heading('3. GOOD FAITH'); paragraph('Both people agree to communicate, respect boundaries, and remember that the relationship comes first.');
-      y += 55; ctx.strokeStyle = '#a7a092'; ctx.beginPath(); ctx.moveTo(150, y); ctx.lineTo(610, y); ctx.stroke(); ctx.moveTo(790, y); ctx.lineTo(1250, y); ctx.stroke();
-      ctx.font = '22px Arial'; ctx.fillStyle = muted; ctx.fillText('Electronic signature', 150, y + 38); ctx.fillText('Date', 790, y + 38);
-      ctx.font = 'italic 40px cursive'; ctx.fillStyle = '#263d74'; ctx.fillText(signature, 175, y - 14); ctx.font = '26px Arial'; ctx.fillText(today, 790, y - 14);
-      ctx.textAlign = 'center'; ctx.fillStyle = muted; ctx.font = '20px Arial'; ctx.fillText('A humorous relationship agreement — not legal advice or a binding legal contract.', 700, 1775);
-      const image = canvas.toDataURL('image/png');
-      app.innerHTML = `<div class="result"><div class="big">🖼️</div><div class="question-number">Signed successfully</div><h2>Your signed picture</h2><p class="sub">It is displayed below. You can download it as a PNG image and send it to her.</p><img class="contract-image" src="${image}" alt="Signed November Agreement"><button class="download" id="savePicture">Download signed picture</button><button class="back" id="restart">← Start over</button></div>`;
-      document.getElementById('savePicture').onclick = () => { const link = document.createElement('a'); link.href = image; link.download = 'Signed-November-Agreement.png'; document.body.appendChild(link); link.click(); link.remove(); };
-      document.getElementById('restart').onclick = () => { step = 0; history = []; retryMode = false; render(); };
-    }
-
-    function retryScreen() { app.innerHTML=`<div class="result"><div class="big">😅</div><h2>Unfortunately, that is not the answer we are looking for.</h2><p>But that is okay — let us try this question one more time.</p><div class="note"><strong>Small update:</strong> “Not right now” has mysteriously disappeared from the options. Please choose wisely. 😇</div><button class="restart" id="tryAgain">Try again</button></div>`; document.getElementById('tryAgain').onclick=()=>{ retryMode=true; render(); }; }
-    function finish(title, text) { app.innerHTML=`<div class="result"><div class="big">${title.includes('approved')?'🎮':title.includes('agreement')?'🤝':'💗'}</div><h2>${title}</h2><p>${text}</p><div class="note"><strong>Relationship rule #1:</strong> GTA 6 is fictional. Being kind, listening, and respecting each other is very real.</div><button class="restart" id="restart">Start over</button></div>`; document.getElementById('restart').onclick=()=>{step=0;history=[];retryMode=false;render();}; }
-    render();
-  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
